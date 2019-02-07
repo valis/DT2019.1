@@ -5,6 +5,20 @@
    data Bool = False | True
 -}
 
+{-
+-- Определения типов данных должны быть строго положительными.
+-- Это означает, что они не могут встречаться слева от -> в конструкторах.
+-- 
+-- Если такие типы данных разрешены, то мы можем определить "тип нетипизированных лямбда-термов" K.
+-- В нем можно закодировать все такие термы, в том числе и незавершающиеся, а такие функции запрещены (см. п. 3 ниже).
+\data K | k (K -> K)
+\func I => k (\lam x => x)
+\func Kc => k (\lam x => k (\lam _ => x))
+\func app (f a : K) : K \elim f
+  | k f' => f' a
+\func omega => k (\lam x => app x x)
+-}
+
 \func not (x : Bool) : Bool -- \with
   | true => false
   | false => true
@@ -26,13 +40,16 @@
 \func example (x y a b c d : Bool) : Bool \elim x, y
   | true, true => {?}
   | true, false => {?}
-  | false, y => \case y, a \with { | true, a => {?} | false, a => {?} }
+  | false, y => \case y, a \with {
+    | true, a => {?}
+    | false, a => {?}
+  }
 {- Haskell:
    example True True a b c d = undefined
    example True False a b c d = undefined
    example False y a b c d = case (y,a) of
-        True, a -> undefined
-        False, a -> undefined
+        (True,a) -> undefined
+        (False,a) -> undefined
 -}
 
 \func \infixr 3 && (x y : Bool) : Bool \elim x
@@ -93,7 +110,8 @@
 
 -- 3. Termination, div
 
--- все функции должны завершаться
+-- Все функции должны завершаться, т.к. иначе мы можем доказать любое утверждение.
+-- Кроме того, алгоритм проверки типов становится неразрешимым, т.к. он должен вычислять произвольные функции, определенные в языке.
 -- \func f : Nat => f
 
 \func \infixl 6 - (x y : Nat) : Nat
@@ -134,6 +152,12 @@
 {- Haskell:
    id :: a -> a
    id x = x
+-}
+
+\func idType : \Pi (A : \Type) (a : A) -> A => id
+{- Haskell:
+   idType :: a -> a
+   idType = id
 -}
 
 -- _ говорит тайпчекеру вывести значение самому.
@@ -187,6 +211,9 @@
 
 -- Доказательство, что из Empty следует что угодно.
 \func absurd {A : \Type} (e : Empty) : A
+
+\func absurd' {A : \Type} (e : Empty) : A \elim e
+  | () -- абсурдный образец
 
 -- \Sigma-тип эквивалентен очевидно определению пар.
 -- \Sigma Nat Nat === \data Pair | pair Nat Nat
@@ -245,6 +272,10 @@
   | true => {?} -- Здесь нужно доказать Empty.
   | false => {?} -- Здесь аналогично. Так как Empty -- пустой тип (aka ложное утверждение), то невозможно сконструировать его элемент (т.е. доказать его).
 
+\func not-isIdempotent' (x : Bool) : T (not (not x) == not x) -> Empty
+  | true => \lam x => x -- Здесь нужно доказать Empty -> Empty.
+  | false => \lam x => x -- Здесь аналогично.
+
 -- Доказательство рефлексивности равенства аналогично not-isInvolution.
 \func ==-refl (x : Bool) : T (x == x)
   | true => unit
@@ -298,14 +329,14 @@
 -- 10. Пространства имен и модули.
 
 -- \where в отличии от хаскелла относится не к отдельной клозе, а ко всему определению.
-\func fff => 0 \where \func ggg => 0
+\func fff => ggg \where \func ggg => 0
 -- Функции, определенные в \where, почти ничем не отличаются от обычных функций.
 -- Единственное отличие заключается в том, что они находятся в другом пространстве имен.
 \func gggTest => fff.ggg
 
 -- Сноска
 -- Можно использовать \let, который несколько проще, чем в хаскелле.
--- В vclang нельзя определять рекурсивные функции в \let и переменные могут ссылаться только на предыдущие переменные.
+-- В arend нельзя определять рекурсивные функции в \let и переменные могут ссылаться только на предыдущие переменные.
 \func letExample => \let
     | x => 1
     | y => x + x

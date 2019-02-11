@@ -1,0 +1,5 @@
+\data List (A : \Type) | nil | cons A (List A)
+
+\func \infixl 6 ++ {A : \Type} (xs ys : List A) : List A \elim xs
+  | nil => ys
+  | cons x xs => cons x (xs ++ ys)

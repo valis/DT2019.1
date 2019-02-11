@@ -1,0 +1,135 @@
+\import Utils
+\import List
+\open Nat
+
+-- 1. \elim или \case?
+
+-- Функции f и f' эквивалентны, но в данной ситуации лучше использовать f', так как выражение вида f' n является нормальной формой, а выражение f n раскрывается в определение f, что менее удобно.
+\func f (x : Nat) : Nat => \case x \with { zero => 0 | suc n => n }
+\func f' (x : Nat) : Nat | zero => 0 | suc n => n
+\func g (n : Nat) => f' n
+
+-- 2. Какая самая лучшая сортировка?
+
+\data Bool | true | false
+
+\func if {A : \Type} (b : Bool) (t e : A) : A \elim b
+  | true => t
+  | false => e
+
+-- Сортировку вставками написать проще всего.
+-- Чем проще определена функция, тем проще доказывать ее свойства.
+\func sort {A : \Type} (less : A -> A -> Bool) (xs : List A) : List A \elim xs
+  | nil => nil
+  | cons x xs => insert less x (sort less xs)
+  \where
+    \func insert {A : \Type} (less : A -> A -> Bool) (x : A) (xs : List A) : List A \elim xs
+      | nil => cons x nil
+      | cons x' xs => if (less x x') (cons x (cons x' xs)) (cons x' (insert less x xs))
+
+-- 3. Еще примеры утверждений и доказательств: ассоциативность сложения натуральных чисел, инволютивность reverse.
+
+-- Ассоциативность + доказывается индукцией по z (так как + определен рекурсией по правому аргументу).
+\func +-assoc (x y z : Nat) : (x + y) + z = x + (y + z) \elim z
+  | 0 => idp
+  | suc z => pmap suc (+-assoc x y z)
+
+-- Если определить функцию reverse через вспомогательную функцию с аккумулятором, то потом будет проще доказывать ее свойства.
+\func reverse {A : \Type} (xs : List A) : List A => rev nil xs
+  \where
+    \func rev {A : \Type} (acc xs : List A) : List A \elim xs
+      | nil => acc
+      | cons x xs => rev (cons x acc) xs
+
+-- reverse (cons x xs) => rev nil (cons x xs) => rev (cons x nil) xs
+-- reverse (reverse (cons x xs)) => reverse (rev (cons x nil) xs) => rev nil (rev (cons x nil) xs)
+--
+-- Если попытаться доказать напрямую, что reverse (reverse xs) = xs, то нам нужно будет доказать, что rev nil (rev (cons x nil) xs) = cons x xs, но сделать это, используя индукционную гипотезу, не получится.
+-- Нужно усилить утверждение, чтобы индукционная гипотеза тоже была бы более сильной.
+-- Другими словами, мы будем доказывать более общее свойство reverse.rev, а через него уже свойство reverse.
+
+\func reverse-isInvolutive {A : \Type} (xs : List A) : reverse (reverse xs) = xs => rev-isInv nil xs
+  \where
+    \func rev-isInv {A : \Type} (acc xs : List A) : reverse (reverse.rev acc xs) = reverse.rev xs acc \elim xs
+      | nil => idp
+      | cons x xs => rev-isInv (cons x acc) xs
+
+-- 4. Рекурсивное определение vec, head, tail.
+
+\func vec (A : \Type) (n : Nat) : \Type \elim n
+  | 0 => \Sigma
+  | suc n => \Sigma A (vec A n)
+
+\func head {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.1
+
+\func tail {A : \Type} (n : Nat) (xs : vec A (suc n)) => xs.2
+
+-- 5. Индуктивное определиние Vec, head, tail, append, length.
+
+\data Vec (A : \Type) (n : Nat) \elim n
+  | 0 => fnil
+  | suc n => fcons A (Vec A n)
+
+\func Head {A : \Type} {n : Nat} (xs : Vec A (suc n)) : A \elim xs
+  | fcons x _ => x
+
+\func Tail {A : \Type} {n : Nat} (xs : Vec A (suc n)) : Vec A n \elim xs
+  | fcons _ xs => xs
+
+\data Maybe (A : \Type) | nothing | just A
+
+\func first {A : \Type} {n : Nat} (xs : Vec A n) : Maybe A \elim n, xs
+  | 0, fnil => nothing
+  | suc n, fcons x xs => just x
+
+\func append {A : \Type} {n m : Nat} (xs : Vec A n) (ys : Vec A m) : Vec A (m + n) \elim n, xs
+  | 0, fnil => ys
+  | suc _, fcons x xs => fcons x (append xs ys)
+
+\func bar : Nat => vec
+
+-- Очень полезная функция.
+\func length {A : \Type} {n : Nat} (xs : Vec A n) => n
+
+-- 6. Fin, toNat, lookup.
+
+-- Тип n-элементных множеств можно определить различными способами.
+-- Например, мы можем определить его как подтип натуральных чисел:
+-- \func fin (n : Nat) => \Sigma (x : Nat) (T (x < n))
+
+\data Empty
+
+\func Fin' (n : Nat)
+  | 0 => Empty
+  | suc n => Maybe (Fin' n)
+
+-- Конструкторы принимают параметры типа данных в качестве неявных аргументов.
+\func emptyList => nil {Nat}
+
+-- Еще его можно определить индуктивно:
+\data Fin (n : Nat) \with
+  | suc n => { fzero | fsuc (Fin n) }
+
+-- Fin 0 -- пустой тип.
+\func absurd {A : \Type} (x : Fin 0) : A
+
+\func fin0 : Fin 3 => fzero
+\func fin1 : Fin 3 => fsuc fzero
+\func fin2 : Fin 3 => fsuc (fsuc fzero)
+-- \func fin3 : Fin 3 => fsuc (fsuc (fsuc fzero))
+
+-- В Fin 3 не более 3 элементов.
+\func atMost3 (x : Fin 3) : Either (x = fin0) (Either (x = fin1) (x = fin2)) \elim x
+  | fzero => inl idp
+  | fsuc fzero => inr (inl idp)
+  | fsuc (fsuc fzero) => inr (inr idp)
+  | fsuc (fsuc (fsuc ()))
+
+\func toNat {n : Nat} (x : Fin n) : Nat
+  | {suc _}, fzero => 0
+  | {suc _}, fsuc x => suc (toNat x)
+
+-- Безопасный lookup.
+\func lookup {A : \Type} {n : Nat} (xs : Vec A n) (i : Fin n) : A \elim n, xs, i
+  | suc _, fcons x _, fzero => x
+  | suc _, fcons _ xs, fsuc i => lookup xs i

@@ -71,6 +71,7 @@
 
 -- 3. Элиминаторы.
 
+-- Элиминатор для Nat
 \func Nat-elim (P : Nat -> \Type)
                (z : P zero)
                (s : \Pi (n : Nat) -> P n -> P (suc n))
@@ -78,6 +79,15 @@
   | zero => z
   | suc n => s n (Nat-elim P z s n)
 
+-- Рекурсор для Nat
+\func Nat-rec (P : \Type)
+              (z : P)
+              (s : Nat -> P -> P)
+              (x : Nat) : P \elim x
+  | zero => z
+  | suc n => s n (Nat-rec P z s n)
+
+-- Элиминатор для Bool (рекурсор для Bool -- это просто if).
 \func Bool-elim (P : Bool -> \Type)
                 (t : P true)
                 (f : P false)

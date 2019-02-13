@@ -1,0 +1,7 @@
+\data Bool | true | false
+
+\data T (b : Bool) \with
+  | true => tt
+
+-- T false is empty
+\func T-absurd {A : \Type} (t : T false) : A

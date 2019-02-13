@@ -1,0 +1,71 @@
+\import Bool
+\import Empty
+\import lect04
+
+-- 1. Определите конгруэнтность для функций двух аргументов через transport.
+--    Можно использовать любые функции, определенные через transport.
+
+\func pmap2 {A B C : \Type} (f : A -> B -> C) {a a' : A} (p : a = a') {b b' : B} (q : b = b') : f a b = f a' b' => {?}
+
+-- 2. Докажите, что transport выражается через pmap и repl и наоборот.
+
+-- Определение pmap через transport было дано на лекции.
+
+-- repl говорит, что если у нас есть два равных типа, то у нас есть функция из одного во второй.
+-- Определите repl через transport.
+
+\func repl {A B : \Type} (p : A = B) (a : A) : B => {?}
+
+-- Определите transport через repl и pmap.
+
+\func transport' {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a) : B a' => {?}
+
+-- В заданиях 3-6 нельзя использовать не только coe, но и все функции, определенные через него, в частнсоти transport.
+
+-- 3. Мы доказали, что left = right через coe. Докажите это, не используя эту функцию.
+
+\func left=right : left = right => {?}
+
+-- 4. Докажите, что если a = a' и b = b', то (a,b) = (a',b'), не используя coe.
+
+\func pairEq {A B : \Type} {a a' : A} {b b' : B} (p : a = a') (q : b = b') : (a,b) = (a',b') => {?}
+
+-- 5. Докажите, что если p = p', то p.1 = p'.1, не используя coe.
+
+\func projEq {A : \Type} (B : A -> \Type) (p p' : \Sigma (x : A) (B x)) (t : p = p') : p.1 = p'.1 => {?}
+
+-- 6. Докажите pmap2, не используя coe.
+
+\func pmap2' {A B C : \Type} (f : A -> B -> C) {a a' : A} (p : a = a') {b b' : B} (q : b = b') : f a b = f a' b' => {?}
+
+-- 7. Мы видели как определить transport через coe. Определите частный случай coe через transport.
+--    Можно ли определить transport через coe0?
+--    Верно ли, что эти конструкции взаимообратны в том смысле что, если мы построим transport по coe, а потом coe0 по transport, то получим исходный (частный случай) coe? Верно ли, что они взаимообратны в обратную сторону.
+
+\func coe0 (A : I -> \Type) (a : A left) : A right => {?}
+
+-- 8. Определите функцию B right -> B left.
+
+\func Itr' {B : I -> \Type} (b : B right) : B left => {?}
+
+-- 9. Докажите, что (\lam x => not (not x)) = (\lam x => x).
+
+\func not (b : Bool) : Bool
+  | true => false
+  | false => true
+
+\func notNotId : (\lam x => not (not x)) = (\lam x => x) => {?}
+
+-- 10. Докажите, что 0 не равно suc x.
+
+\func zero/=suc (x : Nat) (p : 0 = suc x) : Empty => {?}
+
+-- 11. Докажите, что fac не равен suc.
+
+\open Nat(*)
+
+\func fac (n : Nat) : Nat
+  | 0 => 1
+  | suc n => suc n * fac n
+
+\func fac/=suc (p : fac = suc) : Empty => {?}

@@ -1,0 +1,3 @@
+\data Empty
+
+\func absurd {A : \Type} (e : Empty) : A

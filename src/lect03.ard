@@ -99,7 +99,7 @@
 
 \data Empty
 
-\func Fin' (n : Nat)
+\func Fin' (n : Nat) : \Set0
   | 0 => Empty
   | suc n => Maybe (Fin' n)
 

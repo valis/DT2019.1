@@ -7,3 +7,13 @@
 \data Either (A B : \Type)
   | inl A
   | inr B
+
+\func transport {A : \Type} (B : A -> \Type) {a a' : A} (p : a = a') (b : B a)
+  => coe (\lam i => B (p @ i)) b right
+
+-- Транзитивность в инфиксной форме.
+\func \infixr 5 *> {A : \Type} {a a' a'' : A} (p : a = a') (q : a' = a'') : a = a''
+  => transport (\lam x => a = x) q p
+
+-- Симметричность равенства.
+\func sym {A : \Type} {a a' : A} (p : a = a') => transport (\lam x => x = a) p idp

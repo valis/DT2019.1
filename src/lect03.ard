@@ -86,8 +86,6 @@
   | 0, fnil => ys
   | suc _, fcons x xs => fcons x (append xs ys)
 
-\func bar : Nat => vec
-
 -- Очень полезная функция.
 \func length {A : \Type} {n : Nat} (xs : Vec A n) => n
 

@@ -1,5 +1,9 @@
 \data Bool | true | false
 
+\func if (x : Bool) (t e : Nat) : Nat \elim x
+  | true => t
+  | false => e
+
 \data T (b : Bool) \with
   | true => tt
 

@@ -1,3 +1,5 @@
+\import Utils
+
 -- 1. \data Pair, проекции.
 
 -- Мы можем определить тип пар натуральных чисел через \data.
@@ -11,8 +13,6 @@
   | natPair _ y => y
 
 -- 2. Эта-эквивалентность для \Pi-типов, \Sigma-типов, \record.
-
-\func idp {A : \Type} {a : A} => path (\lam _ => a)
 
 -- Если у типа ровно один конструктор, то для него можно определить эта-эквивалентность.
 
@@ -46,13 +46,11 @@
 
 -- Можно использовать синтаксис через точку, но только если слева от точки стоит переменная и ее тип указан явно.
 
--- \let e : NatPair' => f x \in e.snd
--- snd {f x}
--- (f x).snd
-
 \func bar (p : NatPair') => p.snd
 
-\func pmap {A B : \Type} (f : A -> B) {a a' : A} (p : a = a') : f a = f a' => path (\lam i => f (p @ i))
+-- (f x).snd -- Так нельзя. Это можно заменить одним из следующих способов:
+-- \let e : NatPair' => f x \in e.snd
+-- snd {f x}
 
 -- Следующий код не будет тайпчекаться, так как тип p не указан явно.
 -- \func baz {p p' : NatPair'} (q : p = p') => pmap (\lam p => p.fst) q
@@ -203,6 +201,7 @@
 
 -- Отличие классов от рекодов заключается в том, что для классов реализован алгоритм вывода их инстансов наподобие того, как это сделано в хаскелле.
 -- Мы можем определить инстанс класса следующим образом:
+
 \instance NatMonoid : Monoid Nat
   | id => 0
   | * => Nat.+
@@ -217,9 +216,11 @@
   | id-left => {?}
   | id-right => {?}
 
-\instance NatMonoid'' : Monoid Nat 1 (Nat.*) {?} {?} {?}
+-- \instance NatMonoid'' : Monoid Nat 1 (Nat.*) {?} {?} {?}
 
-\func foooo (x : Nat) : x * 1 = x => id-right x
+-- Это не будет работать, т.к. он выбирает первый подходящий instance Monoid.
+\func foooo (x : Nat) : 1 Nat.* x = x => id-left x
+\func foooo' (x : Nat) : 0 Nat.+ x = x => id-left x
 
 -- Инстансы являются обычными функциями.
 \func instEx => NatMonoid.id-left

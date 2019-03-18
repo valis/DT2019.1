@@ -9,3 +9,8 @@
 
 -- T false is empty
 \func T-absurd {A : \Type} (t : T false) : A
+
+\func \infix 4 < (x y : Nat) : Bool
+  | _, 0 => false
+  | 0, suc _ => true
+  | suc x, suc y => x < y

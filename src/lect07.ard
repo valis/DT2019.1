@@ -50,11 +50,6 @@
 
 -- 2. \case по нескольким аргументам.
 
-\func \infix 4 < (x y : Nat) : Bool
-  | _, 0 => false
-  | 0, suc _ => true
-  | suc x, suc y => x < y
-
 \data Ordering | LT | EQ | GT
 
 -- В \case можно паттерн матчиться сразу по нескольким значениям.
